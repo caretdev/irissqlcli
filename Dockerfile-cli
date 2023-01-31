@@ -1,0 +1,18 @@
+FROM python:3.10-slim
+
+# RUN adduser -D worker
+# USER worker
+# WORKDIR /home/worker
+# ENV PATH="/home/worker/.local/bin:${PATH}"
+
+COPY . /opt/irissqlcli
+
+RUN cd /opt/irissqlcli && pip install -e .
+
+ENV IRIS_HOSTNAME=host.docker.internal
+ENV IRIS_PORT=1972
+ENV IRIS_NAMESPACE=USER
+ENV IRIS_USERNAME=_SYSTEM
+ENV IRIS_PASSWORD=SYS
+
+CMD [ "irissqlcli" ]

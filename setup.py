@@ -37,7 +37,7 @@ setup(
     name="irissqlcli",
     author="CaretDev",
     author_email="irissqlcli@caretdev.com",
-    license="BSD",
+    license="MIT",
     version=version,
     url="https://github.com/caretdev/irissqlcli",
     packages=find_packages(),
@@ -54,7 +54,7 @@ setup(
     },
     classifiers=[
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: Unix",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",

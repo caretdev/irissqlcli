@@ -1,0 +1,26 @@
+version: '3'
+services:
+  iris:
+    build: 
+      context: .
+      dockerfile: Dockerfile-iris
+    ports:
+      - 1972
+      - 52773
+    command: 
+      - -a
+      - /home/irisowner/irissqlcli/init-iris.sh
+    volumes:
+      - .:/home/irisowner/irissqlcli
+  cli:
+    image: caretdev/irissqlcli-web
+    build: 
+      dockerfile: Dockerfile-web
+    ports:
+      - 7681:7681
+    environment:
+      - IRIS_HOSTNAME:iris
+      - IRIS_PORT=1972
+      - IRIS_NAMESPACE=USER
+      - IRIS_USERNAME=_SYSTEM
+      - IRIS_PASSWORD=SYS

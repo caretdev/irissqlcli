@@ -1,0 +1,13 @@
+FROM intersystemsdc/iris-community
+
+ENV PATH="$PATH:/home/irisowner/.local/bin"
+
+ENV IRISINSTALLDIR=/usr/irissys
+
+COPY --chown=irisowner:irisowner . /home/irisowner/irissqlcli
+
+RUN cd /home/irisowner/irissqlcli/ && \
+    pip install -e . && \
+    pip install -r requirements-dev.txt
+
+WORKDIR /home/irisowner/irissqlcli
