@@ -12,6 +12,7 @@ import traceback
 from urllib.parse import urlparse
 from collections import namedtuple
 from time import time
+from getpass import getuser
 
 import click
 import pendulum
@@ -203,6 +204,7 @@ class IRISSqlCli(object):
         embedded=False,
         **kwargs
     ):
+        username = username or getuser()
         kwargs.setdefault("application_name", "irissqlcli")
 
         if not self.force_passwd_prompt and not password:
@@ -951,7 +953,7 @@ def parse_uri(uri, hostname=None, port=None, namespace=None, username=None):
     parsed = urlparse(uri)
     embedded = False
     if str(parsed.scheme).startswith("iris"):
-        namespace = parsed.path.split("/")[1] or namespace
+        namespace = parsed.path.split("/")[1] if parsed.path else None or namespace
         username = parsed.username or username
         password = parsed.password or None
         hostname = parsed.hostname or hostname

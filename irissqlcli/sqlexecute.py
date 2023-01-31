@@ -68,6 +68,9 @@ class SQLExecute:
         self.conn.setAutoCommit(True)
         if self.embedded:
             self.server_version = self.conn.iris.system.Version.GetVersion()
+            self.username = self.conn.iris.system.Process.UserName()
+            self.namespace = self.conn.iris.system.Process.NameSpace()
+            self.hostname = self.conn.iris.system.Util.InstallDirectory()
         else:
             self.server_version = self.conn._connection_info._server_version
 
