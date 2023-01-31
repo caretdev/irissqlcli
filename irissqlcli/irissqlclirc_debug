@@ -1,0 +1,4 @@
+[main]
+log_file = ./.irissqlcli.log
+log_level = DEBUG
+history_file = ./.irissqlcli-history.log
