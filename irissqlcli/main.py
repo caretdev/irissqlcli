@@ -189,6 +189,10 @@ class IRISSqlCli(object):
         self.prompt_format = self.get_prompt(arg)
         return [(None, None, None, "Changed prompt format to %s" % arg)]
 
+    def connect_uri(self, uri):
+        hostname, port, namespace, username, password, embedded =  parse_uri(uri)
+        self.connect(hostname, port, namespace, username, password, embedded)
+
     def connect(
         self,
         hostname=None,
@@ -869,15 +873,7 @@ def cli(
     namespace = None
     password = None
     if uri:
-        parsed = urlparse(uri)
-        if str(parsed.scheme).startswith("iris"):
-            namespace = parsed.path.split("/")[1]
-            username = parsed.username or username
-            password = parsed.password or None
-            hostname = parsed.hostname or hostname
-            port = parsed.port or port
-        if parsed.scheme == "iris+emb":
-            embedded = True
+        hostname, port, namespace, username, password, embedded =  parse_uri(uri, hostname, port, namespace, username)
 
     namespace = namespace_opt or namespace or "USER"
     username = username_opt or username
@@ -951,6 +947,18 @@ def cli(
             click.secho(str(e), err=True, fg="red")
             exit(1)
 
+def parse_uri(uri, hostname=None, port=None, namespace=None, username=None):
+    parsed = urlparse(uri)
+    embedded = False
+    if str(parsed.scheme).startswith("iris"):
+        namespace = parsed.path.split("/")[1] or namespace
+        username = parsed.username or username
+        password = parsed.password or None
+        hostname = parsed.hostname or hostname
+        port = parsed.port or port
+    if parsed.scheme == "iris+emb":
+        embedded = True
+    return hostname, port, namespace, username, password, embedded
 
 class ISC_StdoutTypeWrapper(object):
     def __init__(self, stdout, fileno) -> None:
