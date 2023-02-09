@@ -38,6 +38,7 @@ class SQLExecute:
         username,
         password,
         embedded=False,
+        sslcontext=None,
         **kw,
     ) -> None:
         self.hostname = hostname
@@ -46,6 +47,7 @@ class SQLExecute:
         self.username = username
         self.password = password
         self.embedded = embedded
+        self.sslcontext = sslcontext
         self.extra_params = kw
 
         self.server_version = None
@@ -59,6 +61,7 @@ class SQLExecute:
             "namespace": self.namespace,
             "username": self.username,
             "password": self.password,
+            "sslcontext": self.sslcontext
         }
         conn_params["embedded"] = self.embedded
         conn_params.update(self.extra_params)
