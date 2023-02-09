@@ -6,6 +6,7 @@ import os
 import platform
 import re
 import sys
+import ssl
 import shutil
 import threading
 import traceback
@@ -202,6 +203,7 @@ class IRISSqlCli(object):
         username=None,
         password=None,
         embedded=False,
+        sslcontext=None,
         **kwargs
     ):
         username = username or getuser()
@@ -220,7 +222,7 @@ class IRISSqlCli(object):
 
         try:
             sqlexecute = SQLExecute(
-                hostname, port, namespace, username, password, embedded, **kwargs
+                hostname, port, namespace, username, password, embedded, sslcontext, **kwargs
             )
         except Exception as e:  # Connecting to a database could fail.
             self.logger.debug("Database connection failed: %r.", e)
@@ -848,6 +850,8 @@ CONTEXT_SETTINGS = {"help_option_names": ["--help"]}
 @click.option("-e", "--execute", type=str, help="Execute command and quit.")
 @click.argument("uri", default=lambda: None, envvar="IRIS_URI", nargs=1)
 @click.argument("username", default=lambda: None, envvar="IRIS_USERNAME", nargs=1)
+# create an option arg for cert file for ssl connection
+@click.option("-c", "--cert", type=str, help="Certificate file to use for connection.")
 def cli(
     uri,
     hostname,
@@ -864,6 +868,7 @@ def cli(
     csv,
     table,
     execute,
+    cert,
     warn,
     row_limit,
 ):
@@ -887,6 +892,11 @@ def cli(
         auto_vertical_output=auto_vertical_output,
     )
 
+    if cert:
+        sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH,cafile=cert)
+    else:
+        sslcontext = None
+
     if not namespace:
         click.secho(
             "NAMESPACE is requred. ",
@@ -895,7 +905,7 @@ def cli(
         )
     namespace = namespace.upper()
 
-    irissqlcli.connect(hostname, port, namespace, username, password, embedded=embedded)
+    irissqlcli.connect(hostname, port, namespace, username, password, embedded=embedded, sslcontext=sslcontext)
 
     irissqlcli.logger.debug(
         "Launch Params: \n" "\tnamespace: %r" "\tuser: %r" "\thost: %r" "\tport: %r",
