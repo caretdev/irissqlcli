@@ -10,24 +10,38 @@ _logger = logging.getLogger(__name__)
 
 class SQLExecute:
 
+    schemas_query = """
+        SELECT 
+            SCHEMA_NAME
+        FROM INFORMATION_SCHEMA.SCHEMATA
+        WHERE 
+            NOT SCHEMA_NAME %STARTSWITH '%'
+        AND NOT SCHEMA_NAME %STARTSWITH 'Ens'
+        AND SCHEMA_NAME <> 'INFORMATION_SCHEMA'
+        ORDER BY SCHEMA_NAME
+    """
+
     tables_query = """
-        SELECT TABLE_SCHEMA || '.' || TABLE_NAME AS TABLE_NAME 
+        SELECT TABLE_SCHEMA, TABLE_NAME
         FROM INFORMATION_SCHEMA.TABLES
-        WHERE
+        WHERE 
             NOT TABLE_SCHEMA %STARTSWITH '%'
         AND NOT TABLE_SCHEMA %STARTSWITH 'Ens'
         AND TABLE_SCHEMA <> 'INFORMATION_SCHEMA'
-        )
+        ORDER BY TABLE_SCHEMA, TABLE_NAME
     """
 
     table_columns_query = """
         SELECT 
-            TABLE_SCHEMA || '.' || TABLE_NAME AS TABLE_NAME ,
+            TABLE_SCHEMA, 
+            TABLE_NAME,
             COLUMN_NAME
         FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE 
             NOT TABLE_SCHEMA %STARTSWITH '%'
         AND NOT TABLE_SCHEMA %STARTSWITH 'Ens'
         AND TABLE_SCHEMA <> 'INFORMATION_SCHEMA'
+        ORDER BY TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME
     """
 
     def __init__(
@@ -152,6 +166,15 @@ class SQLExecute:
         status = status.format(rowcount, "" if rowcount == 1 else "s")
 
         return (title, cursor, headers, status)
+
+    def schemas(self):
+        """Yields schema names"""
+
+        with self.conn.cursor() as cur:
+            _logger.debug("Schemas Query. sql: %r", self.schemas_query)
+            cur.execute(self.schemas_query)
+            for row in cur:
+                yield row
 
     def tables(self):
         """Yields table names"""

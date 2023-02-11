@@ -394,16 +394,19 @@ class SQLCompleter(Completer):
         self.keywords.extend(additional_keywords)
         self.all_completions.update(additional_keywords)
 
-    def extend_schemata(self, schema):
-        if schema is None:
-            return
-        metadata = self.dbmetadata["tables"]
-        metadata[schema] = {}
+    def extend_schemas(self, data, kind):
+        try:
+            data = [self.escaped_names(d) for d in data]
+        except Exception as ex:
+            logging.exception(ex)
+            data = []
 
-        # dbmetadata.values() are the 'tables' and 'functions' dicts
-        for metadata in self.dbmetadata.values():
+        metadata = self.dbmetadata[kind]
+        for [
+            schema,
+        ] in data:
             metadata[schema] = {}
-        self.all_completions.update(schema)
+            self.all_completions.add(schema)
 
     def extend_relations(self, data, kind):
         """Extend metadata for tables or views
@@ -418,15 +421,17 @@ class SQLCompleter(Completer):
         # crashing.
         try:
             data = [self.escaped_names(d) for d in data]
-        except Exception:
+        except Exception as ex:
+            logging.exception(ex)
             data = []
 
         # dbmetadata['tables'][$schema_name][$table_name] should be a list of
         # column names. Default to an asterisk
         metadata = self.dbmetadata[kind]
-        for relname in data:
-            metadata[relname[0]] = ["*"]
-            self.all_completions.add(relname[0])
+        for [schema, relname] in data:
+            metadata[schema] = metadata[schema] if schema in metadata else {}
+            metadata[schema][relname] = ["*"]
+            self.all_completions.add(relname)
 
     def extend_columns(self, column_data, kind):
         """Extend column metadata
@@ -441,12 +446,13 @@ class SQLCompleter(Completer):
         # prevent crashing.
         try:
             column_data = [self.escaped_names(d) for d in column_data]
-        except Exception:
+        except Exception as ex:
+            logging.exception(ex)
             column_data = []
 
         metadata = self.dbmetadata[kind]
-        for relname, column in column_data:
-            metadata[relname].append(column)
+        for schema, relname, column in column_data:
+            metadata[schema][relname].append(column)
             self.all_completions.add(column)
 
     def extend_functions(self, func_data):
@@ -583,6 +589,11 @@ class SQLCompleter(Completer):
                     )
                     completions.extend(predefined_funcs)
 
+            elif suggestion["type"] == "schema":
+                schemas = self.populate_schema_objects(None, "schemas")
+                schemas = self.find_matches(word_before_cursor, schemas)
+                completions.extend(schemas)
+
             elif suggestion["type"] == "table":
                 tables = self.populate_schema_objects(suggestion["schema"], "tables")
                 tables = self.find_matches(word_before_cursor, tables)
@@ -664,44 +675,52 @@ class SQLCompleter(Completer):
         columns = []
         meta = self.dbmetadata
 
-        for tbl in scoped_tbls:
+        _logger.debug("populate_scoped_cols: %r", scoped_tbls)
+
+        for (schema, relname, _) in scoped_tbls:
+            _logger.debug("populate_scoped_cols: %r.%r", schema, relname)
             # A fully qualified schema.relname reference or default_schema
             # DO NOT escape schema names.
-            schema = tbl[0]
-            relname = tbl[1]
-            escaped_relname = self.escape_name(tbl[1])
+            schema = schema if schema is not None else "SQLUser"
 
-            # We don't know if schema.relname is a table or view. Since
-            # tables and views cannot share the same name, we can check one
-            # at a time
-            try:
-                columns.extend(meta["tables"][schema][relname])
-
-                # Table exists, so don't bother checking for a view
-                continue
-            except KeyError:
-                try:
-                    columns.extend(meta["tables"][schema][escaped_relname])
-                    # Table exists, so don't bother checking for a view
+            for obj_type in ["tables", "views"]:
+                if not obj_type in meta:
                     continue
-                except KeyError:
-                    pass
-
-            try:
-                columns.extend(meta["views"][schema][relname])
-            except KeyError:
-                pass
-
-        return columns
+                for _schema in [schema, self.escape_name(schema)]:
+                    if not _schema in meta[obj_type]:
+                        continue
+                    for _relname in [relname, self.escape_name(relname)]:
+                        if not _relname in meta[obj_type][_schema]:
+                            continue
+                        columns.extend(meta[obj_type][_schema][_relname])
+        return list(set(columns))
 
     def populate_schema_objects(self, schema, obj_type):
         """Returns list of tables or functions for a (optional) schema"""
+        objects = []
+        if obj_type == "schemas":
+            obj_type = "tables"
+            schema = "SQLUser"
+            schemas = []
+            schemas.extend(self.dbmetadata["tables"].keys())
+            schemas.extend(self.dbmetadata["views"].keys())
+            objects.extend([schema + "." for schema in schemas])
         metadata = self.dbmetadata[obj_type]
-
+        schema = (
+            schema if not isinstance(schema, list) else schema[0] if schema else None
+        )
+        if schema is None:
+            return objects
         try:
-            objects = metadata.keys()
+            if schema is None:
+                objects = metadata.keys()
+            elif schema in metadata:
+                objects.extend(metadata[schema].keys())
+            elif self.escape_name(schema) in metadata:
+                objects.extend(metadata[self.escape_name(schema)].keys())
         except KeyError:
+            _logger.debug("populate_schema_objects error: %r - %r\n", schema, obj_type)
             # schema doesn't exist
-            objects = []
+            pass
 
         return objects

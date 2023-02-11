@@ -108,11 +108,9 @@ def refresher(name, refreshers=CompletionRefresher.refreshers):
 #     completer.extend_database_names(executor.databases())
 
 
-# @refresher("schemata")
-# def refresh_schemata(completer, executor):
-#     # name of the current database.
-#     completer.extend_schemata(executor.dbname)
-#     completer.set_dbname(executor.dbname)
+@refresher("schemas")
+def refresh_schemata(completer, executor):
+    completer.extend_schemas(executor.schemas(), kind="tables")
 
 
 @refresher("tables")

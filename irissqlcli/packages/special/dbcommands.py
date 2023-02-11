@@ -5,7 +5,6 @@ import os
 import sys
 import platform
 import shlex
-from sqlite3 import ProgrammingError
 
 from irissqlcli import __version__
 from . import iocommands
@@ -17,19 +16,20 @@ log = logging.getLogger(__name__)
 
 @special_command(
     ".schemas",
-    "\\ds",
+    "\\ds [schema]",
     "List schemas.",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
-    aliases=("\\dt",),
+    aliases=("\\ds",),
 )
 def list_schemas(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     if arg:
         args = ("{0}%".format(arg),)
         query = """
-            SELECT name FROM sqlite_master
-            WHERE type IN ('table','view') AND name LIKE ? AND name NOT LIKE 'sqlite_%'
-            ORDER BY 1
+            SELECT SCHEMA_NAME 
+            FROM INFORMATION_SCHEMA.SCHEMATA
+            WHERE SCHEMA_NAME LIKE ?
+            ORDER BY SCHEMA_NAME
         """
     else:
         args = tuple()
