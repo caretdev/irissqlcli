@@ -1,18 +1,21 @@
 FROM tsl0922/ttyd as ttyd
 
-FROM python:3.10-slim
+FROM caretdev/irissqlcli
+# FROM python:3.10-slim
+
+# COPY . /opt/irissqlcli
+
+# RUN cd /opt/irissqlcli && \
+#   pip install https://github.com/intersystems-community/intersystems-irispython/releases/download/3.4.1/intersystems_iris-3.4.1-py3-none-any.whl && \
+#   pip install .
+
+# ENV IRIS_HOSTNAME=host.docker.internal
+# ENV IRIS_PORT=1972
+# ENV IRIS_NAMESPACE=USER
+# ENV IRIS_USERNAME=_SYSTEM
+# ENV IRIS_PASSWORD=SYS
 
 COPY --from=ttyd /usr/bin/ttyd /usr/bin/ttyd
-
-COPY . /opt/irissqlcli
-
-RUN cd /opt/irissqlcli && pip install -e .
-
-ENV IRIS_HOSTNAME=host.docker.internal
-ENV IRIS_PORT=1972
-ENV IRIS_NAMESPACE=USER
-ENV IRIS_USERNAME=_SYSTEM
-ENV IRIS_PASSWORD=SYS
 
 RUN apt update && \
   apt install -y --no-install-recommends tini && \

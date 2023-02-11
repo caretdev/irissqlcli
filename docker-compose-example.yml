@@ -1,0 +1,20 @@
+version: '3'
+services:
+  iris:
+    image: intersystemsdc/iris-community
+    ports:
+      - 1972
+      - 52773
+    command:
+      - -a
+      - '##class(Security.Users).UnExpireUserPasswords("*")'
+  cli:
+    image: caretdev/irissqlcli-web
+    ports:
+      - 7681:7681
+    environment:
+      - IRIS_HOSTNAME:iris
+      - IRIS_PORT=1972
+      - IRIS_NAMESPACE=USER
+      - IRIS_USERNAME=_SYSTEM
+      - IRIS_PASSWORD=SYS

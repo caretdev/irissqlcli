@@ -4,6 +4,7 @@
 import ast
 from io import open
 import re
+import os
 from setuptools import setup, find_packages
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
@@ -30,7 +31,7 @@ install_requirements = [
     "configobj >= 5.0.6",
     "pendulum ~= 2.1.0",
     "cli_helpers[styles] >= 2.2.1",
-    "intersystems_iris @ https://github.com/intersystems-community/intersystems-irispython/releases/download/3.4.1/intersystems_iris-3.4.1-py3-none-any.whl",
+    # f"intersystems_iris @ file://localhost/{os.getcwd()}/lib/intersystems_iris-3.4.1-py3-none-any.whl"
 ]
 
 setup(
@@ -47,7 +48,6 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     install_requires=install_requirements,
-    # cmdclass={"test": test, "lint": lint},
     entry_points={
         "console_scripts": ["irissqlcli = irissqlcli.main:cli"],
         "distutils.commands": ["lint = tasks:lint", "test = tasks:test"],
