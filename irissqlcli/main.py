@@ -169,6 +169,30 @@ class IRISSqlCli(object):
             aliases=("\\R",),
             case_sensitive=True,
         )
+        special.register_special_command(
+            self.start_db_transaction,
+            "tstart",
+            "\\TS",
+            "Start a Database Transaction.",
+            aliases=("\\TS"),
+            case_sensitive=True,
+        )
+        special.register_special_command(
+            self.commit_db_transaction,
+            "tcommit",
+            "\\TC",
+            "Commit a Database Transaction.",
+            aliases=("\\TC"),
+            case_sensitive=True,
+        )
+        special.register_special_command(
+            self.rollback_db_transaction,
+            "trollback",
+            "\\TR",
+            "Rollback a Database Transaction.",
+            aliases=( "\\TR"),
+            case_sensitive=True,
+        )
 
     def change_table_format(self, arg, **_):
         try:
@@ -191,6 +215,27 @@ class IRISSqlCli(object):
         self.prompt_format = self.get_prompt(arg)
         return [(None, None, None, "Changed prompt format to %s" % arg)]
 
+    def start_db_transaction(self, **_):
+        """
+        Start a Database Transaction
+        """
+        self.run_query("START TRANSACTION")
+        return [(None, None, None, "Database Transaction Started")]
+
+    def commit_db_transaction(self, **_):
+        """
+        Commit a Database Transaction
+        """
+        self.run_query("COMMIT")
+        return [(None, None, None, "Database Transaction Committed")]
+
+    def rollback_db_transaction(self, **_):
+        """
+        Rollback a Database Transaction
+        """
+        self.run_query("ROLLBACK")
+        return [(None, None, None, "Database Transaction Rolled Back")]
+    
     def connect_uri(self, uri):
         hostname, port, namespace, username, password, embedded = parse_uri(uri)
         self.connect(hostname, port, namespace, username, password, embedded)
@@ -1041,7 +1086,6 @@ def has_meta_cmd(query):
 
 def exception_formatter(e):
     return click.style(str(e), fg="red")
-
 
 if __name__ == "__main__":
     cli()
