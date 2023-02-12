@@ -93,3 +93,60 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
         return [(None, None, None, "")]
 
     return [(None, tables, headers, status)]
+
+
+@special_command(
+    "tstart",
+    "\\ts",
+    "Start a Database Transaction.",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+    aliases=("\\ts",),
+)
+def start_db_transaction(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+    cur.execute("START TRANSACTION")
+    status = ""
+    if cur.description:
+        headers = [x[0] for x in cur.description]
+    else:
+        return [(None, None, None, "Transaction Started")]
+
+    return [(None, None, headers, status)]
+
+
+@special_command(
+    "tcommit",
+    "\\tc",
+    "Commit a Database Transaction.",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+    aliases=("\\tc",),
+)
+def commit_db_transaction(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+    cur.execute("COMMIT")
+    status = ""
+    if cur.description:
+        headers = [x[0] for x in cur.description]
+    else:
+        return [(None, None, None, "Transaction Committed")]
+
+    return [(None, None, headers, status)]
+
+
+@special_command(
+    "trollback",
+    "\\tr",
+    "Rollback a Database Transaction.",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+    aliases=("\\tr",),
+)
+def rollback_db_transaction(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+    cur.execute("ROLLBACK")
+    status = ""
+    if cur.description:
+        headers = [x[0] for x in cur.description]
+    else:
+        return [(None, None, None, "Transaction Rolled Back")]
+
+    return [(None, None, headers, status)]
