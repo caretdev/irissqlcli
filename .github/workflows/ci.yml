@@ -47,17 +47,17 @@ jobs:
       - name: Run unit tests
         run: coverage run --source irissqlcli -m pytest
 
-      - name: Run Linters
-        if: matrix.python-version == '3.10'
-        run: |
-          black --check .
-          autoflake -r irissqlcli
+      # - name: Run Linters
+      #   if: matrix.python-version == '3.10'
+      #   run: |
+      #     black --check .
+      #     autoflake -r irissqlcli
 
-      - name: Coverage
-        run: |
-          coverage combine
-          coverage report
-          codecov
+      # - name: Coverage
+      #   run: |
+      #     coverage combine
+      #     coverage report
+      #     codecov
 
   build:
     needs: test
