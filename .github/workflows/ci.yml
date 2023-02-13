@@ -36,6 +36,7 @@ jobs:
         run: |
           pip install -U pip setuptools
           pip install -r requirements-dev.txt
+          pip install -r requirements-iris.txt
 
       - name: Run IRIS Container
         run: |
@@ -79,7 +80,7 @@ jobs:
       - name: Install requirements
         run: |
           pip install -U pip setuptools
-          pip install https://github.com/intersystems-community/intersystems-irispython/releases/download/3.4.1/intersystems_iris-3.4.1-py3-none-any.whl
+          pip install -r requirements-iris.txt
           pip install -r requirements-dev.txt
 
       - name: Build Python package
