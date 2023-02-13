@@ -63,6 +63,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - run: git fetch --depth=1 origin '+refs/tags/*:refs/tags/*'
         continue-on-error: true
       - name: set version
