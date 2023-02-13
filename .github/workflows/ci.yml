@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         python-version:
           - "3.7"
@@ -59,6 +60,7 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    steps:
       - run: git fetch --depth=1 origin '+refs/tags/*:refs/tags/*'
         continue-on-error: true
       - name: set version
