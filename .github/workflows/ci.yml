@@ -1,9 +1,16 @@
 name: irissqlcli
 
 on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
   pull_request:
-    paths-ignore:
-      - '**.rst'
+    branches:
+      - main
+  release:
+    types:
+      - released
 
 jobs:
   build:
