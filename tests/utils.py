@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
+import os
 from os import getenv
 import time
 import signal
 import platform
 import multiprocessing
-import logging
-from contextlib import closing
 
 import intersystems_iris.dbapi._DBAPI as dbapi
 import pytest
@@ -13,7 +12,7 @@ import pytest
 from irissqlcli.main import special
 
 IRIS_HOSTNAME = getenv("IRIS_HOSTNAME", "localhost")
-IRIS_PORT = getenv("IRIS_PORT", 1972)
+IRIS_PORT = int(getenv("IRIS_PORT", 1972))
 IRIS_NAMESPACE = getenv("IRIS_NAMESPACE", "USER")
 IRIS_USERNAME = getenv("IRIS_USERNAME", "_SYSTEM")
 IRIS_PASSWORD = getenv("IRIS_PASSWORD", "SYS")

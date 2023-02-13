@@ -31,7 +31,6 @@ install_requirements = [
     "configobj >= 5.0.6",
     "pendulum ~= 2.1.0",
     "cli_helpers[styles] >= 2.2.1",
-    # f"intersystems_iris @ file://localhost/{os.getcwd()}/lib/intersystems_iris-3.4.1-py3-none-any.whl"
 ]
 
 setup(

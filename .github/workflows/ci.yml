@@ -1,0 +1,91 @@
+name: irissqlcli
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.rst'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version:
+          - 3.7
+          - 3.8
+          - 3.9
+          - 3.10
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: git fetch --depth=1 origin '+refs/tags/*:refs/tags/*'
+        continue-on-error: true
+      - name: set version
+        id: set-version
+        run: |
+          VERSION=$(head -1 irissqlcli/__init__.py | cut -d '"' -f2)
+          [ $GITHUB_EVENT_NAME == 'release' ] && VERSION=${{ github.event.release.tag_name }} && VERSION=${VERSION/v/}
+          [ $GITHUB_EVENT_NAME == 'push' ] && VERSION+=b$(($(git tag -l "v${VERSION}b*" | sort -nt. -k4 2>/dev/null | tail -1 | cut -d b -f2)+1))
+          [ $GITHUB_EVENT_NAME == 'pull_request' ] && VERSION+=-dev.${{ github.event.pull_request.number }}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          sed -i "s/__version__ = .*/__version__ = \"${VERSION}\"/" irissqlcli/__init__.py
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install requirements
+        run: |
+          pip install -U pip setuptools
+          pip install -r requirements-dev.txt
+
+      - name: Run IRIS Container
+        run: |
+          docker run --rm -d -p 1972:1972 intersystemsdc/iris-community \
+          -a 'iris session iris -U %SYS "##class(Security.Users).UnExpireUserPasswords(\"*\")"'
+
+      - name: Run unit tests
+        run: coverage run --source irissqlcli -m pytest
+
+      - name: Run Linters
+        if: matrix.python-version == '3.10'
+        run: |
+          black --check .
+          autoflake -r irissqlcli
+
+      - name: Coverage
+        run: |
+          coverage combine
+          coverage report
+          codecov
+
+      - name: Build Python package
+        run: ./scripts/build-dist.sh
+
+      - uses: actions/upload-artifact@v3
+        if: github.event_name == 'pull_request'
+        with:
+          name: dist
+          path: dist/irissqlcli-${{ steps.set-version.outputs.version }}-py3-none-any.whl
+      - name: Create Release
+        id: create-release
+        uses: softprops/action-gh-release@v1
+        if: github.event_name != 'pull_request'
+        with:
+          tag_name: v${{ steps.set-version.outputs.version }}
+          prerelease: ${{ github.event_name != 'release' }}
+          files: dist/irissqlcli-${{ steps.set-version.outputs.version }}-py3-none-any.whl
+
+      - name: Publish package
+        if: github.event_name != 'pull_request'
+        uses: pypa/gh-action-pypi-publish@release/v1.5
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Docker login
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push Docker images
+        run: make push

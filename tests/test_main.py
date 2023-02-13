@@ -1,8 +1,6 @@
 import os
 from collections import namedtuple
 from textwrap import dedent
-from tempfile import NamedTemporaryFile
-import shutil
 
 import click
 from click.testing import CliRunner
@@ -15,7 +13,7 @@ test_dir = os.path.abspath(os.path.dirname(__file__))
 project_dir = os.path.dirname(test_dir)
 default_config_file = os.path.join(project_dir, "tests", "irissqlclirc")
 
-CLI_ARGS = ["--irissqlclirc", default_config_file, "USER", "_SYSTEM"]
+CLI_ARGS = ["--irissqlclirc", default_config_file]
 
 
 @dbtest

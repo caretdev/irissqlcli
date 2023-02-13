@@ -25,9 +25,10 @@ mkdir -p "$PROJECT"/dist
 cd "$PROJECT"
 $PYTHON_BIN setup.py sdist bdist_wheel
 
-set +x
-
 for package in ${packages[@]};
 do
-    rm -f ./$package
+    rm -f $package
 done
+rm -rf intersystems-irispython
+
+set +x

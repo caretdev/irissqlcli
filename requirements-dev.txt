@@ -8,3 +8,4 @@ coverage
 codecov
 black
 wheel
+autoflake
