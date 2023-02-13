@@ -721,6 +721,5 @@ class SQLCompleter(Completer):
         except KeyError:
             _logger.debug("populate_schema_objects error: %r - %r\n", schema, obj_type)
             # schema doesn't exist
-            pass
 
         return objects

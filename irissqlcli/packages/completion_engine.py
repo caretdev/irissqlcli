@@ -1,5 +1,4 @@
 from __future__ import print_function
-import sys
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where
 from .encodingutils import string_types, text_type

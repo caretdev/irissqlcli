@@ -1,15 +1,8 @@
 from __future__ import unicode_literals, print_function
-import csv
 import logging
-import os
-import sys
-import platform
-import shlex
 
 from irissqlcli import __version__
-from . import iocommands
-from .utils import format_uptime
-from .main import special_command, RAW_QUERY, PARSED_QUERY, ArgumentMissing
+from .main import special_command, PARSED_QUERY
 
 log = logging.getLogger(__name__)
 

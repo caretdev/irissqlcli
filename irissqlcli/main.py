@@ -222,7 +222,14 @@ class IRISSqlCli(object):
 
         try:
             sqlexecute = SQLExecute(
-                hostname, port, namespace, username, password, embedded, sslcontext, **kwargs
+                hostname,
+                port,
+                namespace,
+                username,
+                password,
+                embedded,
+                sslcontext,
+                **kwargs,
             )
         except Exception as e:  # Connecting to a database could fail.
             self.logger.debug("Database connection failed: %r.", e)
@@ -895,7 +902,7 @@ def cli(
     )
 
     if cert:
-        sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH,cafile=cert)
+        sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile=cert)
     else:
         sslcontext = None
 
@@ -907,7 +914,15 @@ def cli(
         )
     namespace = namespace.upper()
 
-    irissqlcli.connect(hostname, port, namespace, username, password, embedded=embedded, sslcontext=sslcontext)
+    irissqlcli.connect(
+        hostname,
+        port,
+        namespace,
+        username,
+        password,
+        embedded=embedded,
+        sslcontext=sslcontext,
+    )
 
     irissqlcli.logger.debug(
         "Launch Params: \n" "\tnamespace: %r" "\tuser: %r" "\thost: %r" "\tport: %r",
@@ -1041,6 +1056,7 @@ def has_meta_cmd(query):
 
 def exception_formatter(e):
     return click.style(str(e), fg="red")
+
 
 if __name__ == "__main__":
     cli()

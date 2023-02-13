@@ -1,22 +1,13 @@
 from __future__ import unicode_literals
 import os
-import re
-import locale
-import logging
-import subprocess
-import shlex
 from io import open
-from time import sleep
 
 import click
-import sqlparse
 from configobj import ConfigObj
 
 from . import export
 from .main import special_command, NO_QUERY, PARSED_QUERY
 from .favoritequeries import FavoriteQueries
-from .utils import handle_cd_command
-from ..prompt_utils import confirm_destructive_query
 
 use_expanded_output = False
 PAGER_ENABLED = True

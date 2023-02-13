@@ -75,7 +75,7 @@ class SQLExecute:
             "namespace": self.namespace,
             "username": self.username,
             "password": self.password,
-            "sslcontext": self.sslcontext
+            "sslcontext": self.sslcontext,
         }
         conn_params["embedded"] = self.embedded
         conn_params.update(self.extra_params)
