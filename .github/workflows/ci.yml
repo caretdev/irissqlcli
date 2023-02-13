@@ -86,7 +86,6 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           platforms: linux/amd64,linux/arm64
-      - name: pull docker image
       - name: Install requirements
         run: |
           pip install -U pip setuptools
