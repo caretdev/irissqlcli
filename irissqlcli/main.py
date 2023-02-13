@@ -1042,6 +1042,5 @@ def has_meta_cmd(query):
 def exception_formatter(e):
     return click.style(str(e), fg="red")
 
-
 if __name__ == "__main__":
     cli()
