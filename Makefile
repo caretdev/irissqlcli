@@ -1,21 +1,49 @@
 flags = --no-cache --progress plain
 platforms =
 push = --load
+version = $(shell head -1 irissqlcli/__init__.py | cut -d '"' -f2)
 
-doker: cli web
+cli-image = caretdev/irissqlcli
+web-image = caretdev/irissqlcli-web
 
-push: push-cli push-web
+dockerfile := Dockerfile
 
-push-cli: push = --push 
-push-cli: platforms = --platform linux/arm64,linux/amd64
-push-cli: cli
+releases = beta latest
+apps = cli web
 
-push-web: push = --push 
-push-web: platforms = --platform linux/arm64,linux/amd64
-push-web: web
+ifeq ($(findstring b,$(version)),b)
+	release = beta
+else
+	release = latest
+endif
 
-cli:
-	docker buildx build $(flags) $(push) $(platforms) -f Dockerfile-cli -t caretdev/irissqlcli .
+push: push-$(release)
 
-web:
-	docker buildx build $(flags) $(push) $(platforms) -f Dockerfile-web -t caretdev/irissqlcli-web .
+build: $(release)
+
+help:
+	@echo help
+
+cli: app = cli
+
+web: app = web
+
+$(apps): tags += -t $($@-image):$(version)
+$(apps): 
+	@docker buildx build $(flags) $(push) $(platforms) -f $(dockerfile)-$(@) $(tags) .
+
+beta: tags = -t $($@-image):beta
+
+latest: tags = -t $($@-image):latest
+
+$(releases): $(apps)
+
+test:
+	@echo test: $(release-app)
+
+
+$(addprefix push-, $(releases)): push = --push
+$(addprefix push-, $(releases)): platforms = --platform linux/arm64,linux/amd64
+push-beta: beta
+push-latest: latest
+
