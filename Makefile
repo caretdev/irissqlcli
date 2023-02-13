@@ -28,22 +28,17 @@ cli: app = cli
 
 web: app = web
 
-$(apps): tags += -t $($@-image):$(version)
 $(apps): 
-	@docker buildx build $(flags) $(push) $(platforms) -f $(dockerfile)-$(@) $(tags) .
+	@echo docker buildx build $(flags) $(push) $(platforms) -f $(dockerfile)-$(@) $(tags) .
 
 beta: tags = -t $($@-image):beta
 
 latest: tags = -t $($@-image):latest
+latest: tags += -t $($@-image):$(version)
 
 $(releases): $(apps)
-
-test:
-	@echo test: $(release-app)
-
 
 $(addprefix push-, $(releases)): push = --push
 $(addprefix push-, $(releases)): platforms = --platform linux/arm64,linux/amd64
 push-beta: beta
 push-latest: latest
-
