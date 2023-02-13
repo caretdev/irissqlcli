@@ -13,31 +13,19 @@ on:
       - released
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         python-version:
-          - 3.7
-          - 3.8
-          - 3.9
-          - 3.10
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
 
     steps:
       - uses: actions/checkout@v3
-      - run: git fetch --depth=1 origin '+refs/tags/*:refs/tags/*'
-        continue-on-error: true
-      - name: set version
-        id: set-version
-        run: |
-          VERSION=$(head -1 irissqlcli/__init__.py | cut -d '"' -f2)
-          [ $GITHUB_EVENT_NAME == 'release' ] && VERSION=${{ github.event.release.tag_name }} && VERSION=${VERSION/v/}
-          [ $GITHUB_EVENT_NAME == 'push' ] && VERSION+=b$(($(git tag -l "v${VERSION}b*" | sort -nt. -k4 2>/dev/null | tail -1 | cut -d b -f2)+1))
-          [ $GITHUB_EVENT_NAME == 'pull_request' ] && VERSION+=-dev.${{ github.event.pull_request.number }}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          sed -i "s/__version__ = .*/__version__ = \"${VERSION}\"/" irissqlcli/__init__.py
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -68,6 +56,30 @@ jobs:
           coverage report
           codecov
 
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+      - run: git fetch --depth=1 origin '+refs/tags/*:refs/tags/*'
+        continue-on-error: true
+      - name: set version
+        id: set-version
+        run: |
+          VERSION=$(head -1 irissqlcli/__init__.py | cut -d '"' -f2)
+          [ $GITHUB_EVENT_NAME == 'release' ] && VERSION=${{ github.event.release.tag_name }} && VERSION=${VERSION/v/}
+          [ $GITHUB_EVENT_NAME == 'push' ] && VERSION+=b$(($(git tag -l "v${VERSION}b*" | sort -nt. -k4 2>/dev/null | tail -1 | cut -d b -f2)+1))
+          [ $GITHUB_EVENT_NAME == 'pull_request' ] && VERSION+=-dev.${{ github.event.pull_request.number }}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          sed -i "s/__version__ = .*/__version__ = \"${VERSION}\"/" irissqlcli/__init__.py
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+
+      - name: Install requirements
+        run: |
+          pip install -U pip setuptools
+          pip install https://github.com/intersystems-community/intersystems-irispython/releases/download/3.4.1/intersystems_iris-3.4.1-py3-none-any.whl
+          pip install -r requirements-dev.txt
+
       - name: Build Python package
         run: ./scripts/build-dist.sh
 
@@ -76,6 +88,7 @@ jobs:
         with:
           name: dist
           path: dist/irissqlcli-${{ steps.set-version.outputs.version }}-py3-none-any.whl
+
       - name: Create Release
         id: create-release
         uses: softprops/action-gh-release@v1
