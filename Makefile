@@ -29,7 +29,7 @@ cli: app = cli
 web: app = web
 
 $(apps): 
-	@echo docker buildx build $(flags) $(push) $(platforms) -f $(dockerfile)-$(@) $(tags) .
+	@docker buildx build $(flags) $(push) $(platforms) -f $(dockerfile)-$(@) $(tags) .
 
 beta: tags = -t $($@-image):beta
 
