@@ -10,8 +10,17 @@ Based on [pgcli](https://github.com/dbcli/pgcli)
 Quick Start
 ==
 
+With Python
+
 ```shell
 pip install -U irissqlcli
+```
+
+Or with homebrew
+
+```shell
+brew tap caretdev/tap
+brew install irissqlcli
 ```
 
 Usage
