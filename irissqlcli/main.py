@@ -902,7 +902,9 @@ def cli(
     )
 
     if cert:
-        sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile=cert)
+        sslcontext = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        sslcontext.load_verify_locations(cert)
+        sslcontext.check_hostname = False
     else:
         sslcontext = None
 

@@ -65,6 +65,7 @@ class CompletionRefresher(object):
             username=e.username,
             password=e.password,
             embedded=e.embedded,
+            sslcontext=e.sslcontext,
             **e.extra_params,
         )
 
