@@ -122,3 +122,28 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build and push Docker images
         run: make push
+
+  homebrew:
+    needs: build
+    if: github.event_name == 'release'
+    name: Bump Homebrew formula
+    runs-on: ubuntu-latest
+    steps:
+      - name: set version
+        id: set-version
+        run: |
+          VERSION=${{ github.event.release.tag_name }} && VERSION=${VERSION/v/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - uses: mislav/bump-homebrew-formula-action@v2
+        with:
+          formula-name: irissqlcli
+          formula-path: Formula/irissqlcli.rb
+          homebrew-tap: caretdev/homebrew-tap
+          base-branch: main
+          download-url: https://pypi.io/packages/source/i/irissqlcli/irissqlcli-${{ steps.set-version.outputs.version }}.tar.gz
+          commit-message: |
+            {{formulaName}} {{version}}
+
+            Created by https://github.com/mislav/bump-homebrew-formula-action
+        env:
+          COMMITTER_TOKEN: ${{ secrets.TOKEN }}
