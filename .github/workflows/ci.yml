@@ -123,6 +123,10 @@ jobs:
       - name: Build and push Docker images
         run: make push
 
+      - uses: actions/checkout@v3
+        if: github.event_name == 'release'
+        with:
+          ref: main
       - name: Bump version
         if: github.event_name == 'release'
         run: |
