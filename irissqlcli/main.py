@@ -20,7 +20,7 @@ import pendulum
 from cli_helpers.tabular_output import TabularOutputFormatter
 from cli_helpers.tabular_output.preprocessors import align_decimals, format_numbers
 from cli_helpers.utils import strip_ansi
-from intersystems_iris.dbapi._DBAPI import OperationalError
+from intersystems_iris.dbapi._DBAPI import OperationalError, DatabaseError
 from prompt_toolkit.completion import DynamicCompleter, ThreadedCompleter
 from prompt_toolkit.document import Document
 from prompt_toolkit.enums import DEFAULT_BUFFER, EditingMode
@@ -418,12 +418,12 @@ class IRISSqlCli(object):
             click.secho("cancelled query", err=True, fg="red")
         except NotImplementedError:
             click.secho("Not Yet Implemented.", fg="yellow")
-        except OperationalError as e:
+        except DatabaseError as e:
             logger.error("sql: %r, error: %r", text, e)
             logger.error("traceback: %r", traceback.format_exc())
             click.secho(str(e), err=True, fg="red")
-            if handle_closed_connection:
-                self._handle_server_closed_connection(text)
+            # if handle_closed_connection:
+            #     self._handle_server_closed_connection(text)
         except (IRISSQLCliQuitError, EOFError) as e:
             raise
         except Exception as e:
@@ -899,6 +899,7 @@ def cli(
         logfile=logfile,
         irissqlclirc=irissqlclirc,
         auto_vertical_output=auto_vertical_output,
+        warn=warn,
     )
 
     if cert:

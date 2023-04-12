@@ -135,7 +135,7 @@ class SQLExecute:
                 except special.CommandNotFound:
                     yield self.execute_normal_sql(sql) + (sql, True, False)
 
-            except dbapi.DatabaseError as e:
+            except dbapi.OperationalError as e:
                 _logger.error("sql: %r, error: %r", sql, e)
                 _logger.error("traceback: %r", traceback.format_exc())
 
