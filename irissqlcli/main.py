@@ -10,7 +10,6 @@ import ssl
 import shutil
 import threading
 import traceback
-from urllib.parse import urlparse
 from collections import namedtuple
 from time import time
 from getpass import getuser
@@ -37,6 +36,7 @@ from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.shortcuts import CompleteStyle, PromptSession
 
 from irissqlcli.completion_refresher import CompletionRefresher
+from irissqlcli.utils import parse_uri
 
 from .__init__ import __version__
 from .clitoolbar import create_toolbar_tokens_func
@@ -48,6 +48,7 @@ from .sqlexecute import SQLExecute
 from .style import style_factory, style_factory_output
 from .packages.encodingutils import utf8tounicode, text_type
 from .packages import special
+from .packages.special import NO_QUERY
 from .packages.prompt_utils import confirm, confirm_destructive_query
 
 COLOR_CODE_REGEX = re.compile(r"\x1b(\[.*?[@-~]|\].*?(\x07|\x1b\\))")
@@ -76,7 +77,6 @@ class IRISSQLCliQuitError(Exception):
 
 
 class IRISSqlCli(object):
-
     default_prompt = "[SQL]\\u@\\h:\\d> "
     max_len_prompt = 45
 
@@ -162,6 +162,14 @@ class IRISSqlCli(object):
             case_sensitive=True,
         )
         special.register_special_command(
+            self.echo_test,
+            ".echo",
+            "",
+            "Outputs the value.",
+            case_sensitive=True,
+            arg_type=special.PARSED_QUERY,
+        )
+        special.register_special_command(
             self.change_prompt_format,
             "prompt",
             "\\R",
@@ -179,6 +187,14 @@ class IRISSqlCli(object):
             for table_type in self.formatter.supported_formats:
                 msg += "\n\t{}".format(table_type)
             yield (None, None, None, msg)
+
+    def echo_test(self, arg, **_):
+        msg = arg
+        if len(msg) > 1:
+            msg = msg[1:-1] if msg[0] == "'" and msg[-1] == "'" else msg
+            msg = msg[1:-1] if msg[0] == '"' and msg[-1] == '"' else msg
+        print(msg)
+        yield (None, None, None, None)
 
     def change_prompt_format(self, arg, **_):
         """
@@ -425,7 +441,7 @@ class IRISSqlCli(object):
             # if handle_closed_connection:
             #     self._handle_server_closed_connection(text)
         except (IRISSQLCliQuitError, EOFError) as e:
-            raise
+            raise e
         except Exception as e:
             logger.error("sql: %r, error: %r", text, e)
             logger.error("traceback: %r", traceback.format_exc())
@@ -529,7 +545,6 @@ class IRISSqlCli(object):
         return margin
 
     def initialize_logging(self):
-
         log_file = self.config["main"]["log_file"]
         if log_file == "default":
             log_file = config_location() + "log"
@@ -814,7 +829,13 @@ CONTEXT_SETTINGS = {"help_option_names": ["--help"]}
     help="Force password prompt.",
 )
 @click.option("-v", "--version", is_flag=True, help="Version of irissqlcli.")
-@click.option("-n", "--nspace", "namespace_opt", help="namespace name to connect to.")
+@click.option(
+    "-n",
+    "--nspace",
+    "namespace_opt",
+    envvar="IRIS_NAMESPACE",
+    help="namespace name to connect to.",
+)
 @click.option(
     "-q",
     "--quiet",
@@ -891,8 +912,8 @@ def cli(
             uri, hostname, port, namespace, username
         )
 
-    namespace = namespace_opt or namespace or "USER"
-    username = username_opt or username
+    namespace = namespace or namespace_opt or "USER"
+    username = username or username_opt
     irissqlcli = IRISSqlCli(
         prompt_passwd,
         quiet,
@@ -978,20 +999,6 @@ def cli(
         except Exception as e:
             click.secho(str(e), err=True, fg="red")
             exit(1)
-
-
-def parse_uri(uri, hostname=None, port=None, namespace=None, username=None):
-    parsed = urlparse(uri)
-    embedded = False
-    if str(parsed.scheme).startswith("iris"):
-        namespace = parsed.path.split("/")[1] if parsed.path else None or namespace
-        username = parsed.username or username
-        password = parsed.password or None
-        hostname = parsed.hostname or hostname
-        port = parsed.port or port
-    if parsed.scheme == "iris+emb":
-        embedded = True
-    return hostname, port, namespace, username, password, embedded
 
 
 class ISC_StdoutTypeWrapper(object):

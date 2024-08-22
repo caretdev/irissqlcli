@@ -29,7 +29,7 @@ install_requirements = [
     "prompt_toolkit>=3.0.3,<4.0.0",
     "sqlparse >=0.3.0,<0.5",
     "configobj >= 5.0.6",
-    "pendulum ~= 2.1.0",
+    "pendulum ~= 3.0.0",
     "cli_helpers[styles] >= 2.2.1",
 ]
 
@@ -57,10 +57,6 @@ setup(
         "Operating System :: Unix",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: SQL",
         "Topic :: Database",
         "Topic :: Database :: Front-Ends",

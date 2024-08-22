@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-from os import getenv
 import time
 import signal
 import platform
@@ -11,36 +10,39 @@ import pytest
 
 from irissqlcli.main import special
 
-IRIS_HOSTNAME = getenv("IRIS_HOSTNAME", "localhost")
-IRIS_PORT = int(getenv("IRIS_PORT", 1972))
-IRIS_NAMESPACE = getenv("IRIS_NAMESPACE", "USER")
-IRIS_USERNAME = getenv("IRIS_USERNAME", "_SYSTEM")
-IRIS_PASSWORD = getenv("IRIS_PASSWORD", "SYS")
-
 
 def db_connection(embedded=False):
     if embedded:
         conn = dbapi.connect(embedded=True)
     else:
         conn = dbapi.connect(
-            hostname=IRIS_HOSTNAME,
-            port=IRIS_PORT,
-            namespace=IRIS_NAMESPACE,
-            username=IRIS_USERNAME,
-            password=IRIS_PASSWORD,
+            hostname=pytest.iris_hostname,
+            port=pytest.iris_port,
+            namespace=pytest.iris_namespace,
+            username=pytest.iris_username,
+            password=pytest.iris_password,
         )
     return conn
 
 
-try:
-    db_connection()
-    CAN_CONNECT_TO_DB = True
-except Exception as ex:
-    CAN_CONNECT_TO_DB = False
+def check_connection():
+    try:
+        db_connection()
+        return True
+    except Exception as ex:  # noqa
+        print(ex)
+        return False
 
-dbtest = pytest.mark.skipif(
-    not CAN_CONNECT_TO_DB, reason="Error creating IRIS connection"
-)
+
+def dbtest():
+    if check_connection():
+
+        def decorator(func):
+            return func
+
+        return decorator
+
+    return pytest.mark.skip(reason="Error creating IRIS connection")
 
 
 def drop_tables(connection):

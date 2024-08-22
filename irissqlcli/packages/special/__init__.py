@@ -8,5 +8,6 @@ def export(defn):
     return defn
 
 
+from .main import NO_QUERY, RAW_QUERY, PARSED_QUERY
 from . import dbcommands
 from . import iocommands

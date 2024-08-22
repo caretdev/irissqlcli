@@ -2,12 +2,13 @@ import os
 from collections import namedtuple
 from textwrap import dedent
 
+import pytest
 import click
-from click.testing import CliRunner
 
 from irissqlcli.main import cli, IRISSqlCli
 from irissqlcli.packages.special.main import COMMANDS as SPECIAL_COMMANDS
 from utils import dbtest, run
+
 
 test_dir = os.path.abspath(os.path.dirname(__file__))
 project_dir = os.path.dirname(test_dir)
@@ -16,13 +17,12 @@ default_config_file = os.path.join(project_dir, "tests", "irissqlclirc")
 CLI_ARGS = ["--irissqlclirc", default_config_file]
 
 
-@dbtest
-def test_execute_arg(executor):
+@dbtest()
+def test_execute_arg(executor, runner):
     run(executor, "create table test (a text)")
     run(executor, "insert into test values('abc')")
 
     sql = "select * from test;"
-    runner = CliRunner()
     result = runner.invoke(cli, args=CLI_ARGS + ["-e", sql])
 
     assert result.exit_code == 0
@@ -38,13 +38,12 @@ def test_execute_arg(executor):
     assert expected in result.output
 
 
-@dbtest
-def test_execute_arg_with_table(executor):
+@dbtest()
+def test_execute_arg_with_table(executor, runner):
     run(executor, "create table test (a text)")
     run(executor, "insert into test values('abc')")
 
     sql = "select * from test;"
-    runner = CliRunner()
     result = runner.invoke(cli, args=CLI_ARGS + ["-e", sql] + ["--table"])
     expected = "+-----+\n| a   |\n+-----+\n| abc |\n+-----+\n"
 
@@ -52,13 +51,12 @@ def test_execute_arg_with_table(executor):
     assert expected in result.output
 
 
-@dbtest
-def test_execute_arg_with_csv(executor):
+@dbtest()
+def test_execute_arg_with_csv(executor, runner):
     run(executor, "create table test (a text)")
     run(executor, "insert into test values('abc')")
 
     sql = "select * from test;"
-    runner = CliRunner()
     result = runner.invoke(cli, args=CLI_ARGS + ["-e", sql] + ["--csv"])
     expected = '"a"\n"abc"\n'
 
@@ -66,14 +64,13 @@ def test_execute_arg_with_csv(executor):
     assert expected in "".join(result.output)
 
 
-@dbtest
-def test_batch_mode(executor):
+@dbtest()
+def test_batch_mode(executor, runner):
     run(executor, """create table test(a text)""")
     run(executor, """insert into test values('abc'), ('def'), ('ghi')""")
 
     sql = "select count(*) cnt from test;\n" "select top 1 * from test;"
 
-    runner = CliRunner()
     result = runner.invoke(cli, args=CLI_ARGS, input=sql)
 
     assert result.exit_code == 0
@@ -81,14 +78,13 @@ def test_batch_mode(executor):
     assert "a\nabc\n" in "".join(result.output)
 
 
-@dbtest
-def test_batch_mode_table(executor):
+@dbtest()
+def test_batch_mode_table(executor, runner):
     run(executor, """create table test(a text)""")
     run(executor, """insert into test values('abc'), ('def'), ('ghi')""")
 
     sql = "select count(*) cnt from test;\n" "select top 1 * from test;"
 
-    runner = CliRunner()
     result = runner.invoke(cli, args=CLI_ARGS + ["-t"], input=sql)
 
     expected = dedent(
@@ -110,14 +106,13 @@ def test_batch_mode_table(executor):
     assert expected in result.output
 
 
-@dbtest
-def test_batch_mode_csv(executor):
+@dbtest()
+def test_batch_mode_csv(executor, runner):
     run(executor, """create table test(a text, b text)""")
     run(executor, """insert into test (a, b) values('abc', 'de\nf'), ('ghi', 'jkl')""")
 
     sql = "select * from test;"
 
-    runner = CliRunner()
     result = runner.invoke(cli, args=CLI_ARGS + ["--csv"], input=sql)
 
     expected = '"a","b"\n"abc","de\nf"\n"ghi","jkl"\n'

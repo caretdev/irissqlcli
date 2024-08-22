@@ -4,12 +4,12 @@ import sqlparse
 import traceback
 
 from .packages import special
+from .utils import parse_uri
 
 _logger = logging.getLogger(__name__)
 
 
 class SQLExecute:
-
     schemas_query = """
         SELECT 
             SCHEMA_NAME
@@ -68,6 +68,17 @@ class SQLExecute:
 
         self.connect()
 
+    def from_uri(uri):
+        hostname, port, namespace, username, password, embedded = parse_uri(uri)
+        return SQLExecute(
+            hostname=hostname,
+            port=port,
+            namespace=namespace,
+            username=username,
+            password=password,
+            embedded=embedded,
+        )
+
     def connect(self):
         conn_params = {
             "hostname": self.hostname,
@@ -102,6 +113,9 @@ class SQLExecute:
         sqltemp = []
         sqlarr = []
 
+        statement = "\n".join(
+            [line for line in statement.split("\n") if not line.startswith("--")]
+        )
         if statement.startswith("--"):
             sqltemp = statement.split("\n")
             sqlarr.append(sqltemp[0])

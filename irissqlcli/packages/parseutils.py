@@ -12,7 +12,7 @@ cleanup_regex = {
     # This matches everything except spaces, parens, colon, comma, and period
     "most_punctuations": re.compile(r"([^\.():,\s]+)$"),
     # This matches everything except a space.
-    "all_punctuations": re.compile("([^\s]+)$"),
+    "all_punctuations": re.compile(r"([^\s]+)$"),
 }
 
 
@@ -40,9 +40,9 @@ def last_word(text, include="alphanum_underscore"):
     'def'
     >>> last_word('bac $def', include='most_punctuations')
     '$def'
-    >>> last_word('bac \def', include='most_punctuations')
+    >>> last_word('bac \\def', include='most_punctuations')
     '\\\\def'
-    >>> last_word('bac \def;', include='most_punctuations')
+    >>> last_word('bac \\def;', include='most_punctuations')
     '\\\\def;'
     >>> last_word('bac::def', include='most_punctuations')
     'def'
