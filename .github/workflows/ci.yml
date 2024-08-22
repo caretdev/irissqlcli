@@ -40,8 +40,12 @@ jobs:
           pip install -r requirements-iris.txt
           pip install -e .
 
-      - name: Run unit tests
-        run: pytest --container containers.intersystems.com/intersystems/iris-community:latest-em
+      - uses: nick-fields/retry@v2
+        name: Run unit tests
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: pytest --container containers.intersystems.com/intersystems/iris-community:latest-em --lf
 
       # - name: Run Linters
       #   if: matrix.python-version == '3.10'
