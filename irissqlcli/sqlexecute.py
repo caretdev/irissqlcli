@@ -94,7 +94,7 @@ class SQLExecute:
         if self.embedded:
             conn = iris.dbapi.connect(mode="embedded", namespace=self.namespace)
         else:
-            conn = iris.dbapi.connect(**conn_params)
+            conn = iris.dbapi.connect(hostname=conn_params["hostname"], port=conn_params["port"], namespace=conn_params["namespace"], username=conn_params["username"], password=conn_params["password"])
         self.conn = conn
         if not self.embedded:
             self.conn.setAutoCommit(True)
@@ -105,7 +105,13 @@ class SQLExecute:
                 self.namespace = iris.system.Process.NameSpace()
             self.hostname = iris.system.Util.InstallDirectory()
         else:
-            self.server_version = self.conn._connection_info._server_version
+            try:
+                iris_conn = iris.connect(hostname=conn_params["hostname"], port=conn_params["port"], namespace=conn_params["namespace"], username=conn_params["username"], password=conn_params["password"])
+                iris.runtime.configure(native_connection=iris_conn)
+                version =iris.system.Version.GetVersion()
+                self.server_version = version
+            except Exception as e:
+                self.server_version = "unknown"
 
     def run(
         self,
