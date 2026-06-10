@@ -180,7 +180,7 @@ class SQLExecute:
         if cursor.description:
             headers = [x[0] for x in cursor.description]
             status = "{0} row{1} in set"
-            cursor = list(cursor)
+            cursor = cursor.fetchall()
             rowcount = len(cursor)
         else:
             _logger.debug("No rows in result.")

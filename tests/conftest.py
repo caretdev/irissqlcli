@@ -31,10 +31,10 @@ def pytest_configure(config: Config):
     if not container:
         pytest.iris_hostname = os.getenv("IRIS_HOSTNAME", "localhost")
         pytest.iris_port = int(os.getenv("IRIS_PORT", 1972))
-        pytest.iris_username = os.getenv("IRIS_USERNAME", "_SYSTEM")
+        pytest.iris_username = os.getenv("IRIS_USERNAME", "SuperUser")
         pytest.iris_password = os.getenv("IRIS_PASSWORD", "SYS")
         pytest.iris_namespace = os.getenv("IRIS_NAMESPACE", "USER")
-        pytest.url
+        pytest.dburi = f"iris://{pytest.iris_username}:{pytest.iris_password}@{pytest.iris_hostname}:{pytest.iris_port}/{pytest.iris_namespace}"
         return
 
     print("Starting IRIS container:", container)
