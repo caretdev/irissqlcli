@@ -1,5 +1,5 @@
 import logging
-import intersystems_iris.dbapi._DBAPI as dbapi
+import iris
 import sqlparse
 import traceback
 
@@ -91,14 +91,19 @@ class SQLExecute:
         conn_params["embedded"] = self.embedded
         conn_params.update(self.extra_params)
 
-        conn = dbapi.connect(**conn_params)
-        self.conn = conn
-        self.conn.setAutoCommit(True)
         if self.embedded:
-            self.server_version = self.conn.iris.system.Version.GetVersion()
-            self.username = self.conn.iris.system.Process.UserName()
-            self.namespace = self.conn.iris.system.Process.NameSpace()
-            self.hostname = self.conn.iris.system.Util.InstallDirectory()
+            conn = iris.dbapi.connect(mode="embedded", namespace=self.namespace)
+        else:
+            conn = iris.dbapi.connect(**conn_params)
+        self.conn = conn
+        if not self.embedded:
+            self.conn.setAutoCommit(True)
+        if self.embedded:
+            self.server_version = iris.system.Version.GetVersion()
+            self.username = iris.system.Process.UserName()
+            if self.namespace is None:
+                self.namespace = iris.system.Process.NameSpace()
+            self.hostname = iris.system.Util.InstallDirectory()
         else:
             self.server_version = self.conn._connection_info._server_version
 
@@ -140,7 +145,7 @@ class SQLExecute:
             try:
                 try:
                     cur = self.conn.cursor()
-                except dbapi.InterfaceError:
+                except iris.dbapi.InterfaceError:
                     cur = None
                 try:
                     _logger.debug("Trying a dbspecial command. sql: %r", sql)
@@ -149,7 +154,7 @@ class SQLExecute:
                 except special.CommandNotFound:
                     yield self.execute_normal_sql(sql) + (sql, True, False)
 
-            except dbapi.OperationalError as e:
+            except iris.dbapi.OperationalError as e:
                 _logger.error("sql: %r, error: %r", sql, e)
                 _logger.error("traceback: %r", traceback.format_exc())
 
