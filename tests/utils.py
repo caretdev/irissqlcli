@@ -5,7 +5,7 @@ import signal
 import platform
 import multiprocessing
 
-import intersystems_iris.dbapi._DBAPI as dbapi
+import iris
 import pytest
 
 from irissqlcli.main import special
@@ -13,9 +13,9 @@ from irissqlcli.main import special
 
 def db_connection(embedded=False):
     if embedded:
-        conn = dbapi.connect(embedded=True)
+        conn = iris.dbapi.connect(mode="embedded")
     else:
-        conn = dbapi.connect(
+        conn = iris.dbapi.connect(
             hostname=pytest.iris_hostname,
             port=pytest.iris_port,
             namespace=pytest.iris_namespace,

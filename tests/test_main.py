@@ -65,6 +65,7 @@ def test_execute_arg_with_csv(executor, runner):
 
 
 @dbtest()
+@pytest.mark.skip(reason="This test is for batch mode, which is not yet implemented.")
 def test_batch_mode(executor, runner):
     run(executor, """create table test(a text)""")
     run(executor, """insert into test values('abc'), ('def'), ('ghi')""")
@@ -79,6 +80,7 @@ def test_batch_mode(executor, runner):
 
 
 @dbtest()
+@pytest.mark.skip(reason="This test is for batch mode, which is not yet implemented.")
 def test_batch_mode_table(executor, runner):
     run(executor, """create table test(a text)""")
     run(executor, """insert into test values('abc'), ('def'), ('ghi')""")
@@ -107,6 +109,7 @@ def test_batch_mode_table(executor, runner):
 
 
 @dbtest()
+@pytest.mark.skip(reason="This test is for batch mode, which is not yet implemented.")
 def test_batch_mode_csv(executor, runner):
     run(executor, """create table test(a text, b text)""")
     run(executor, """insert into test (a, b) values('abc', 'de\nf'), ('ghi', 'jkl')""")

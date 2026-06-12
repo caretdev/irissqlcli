@@ -19,7 +19,7 @@ import pendulum
 from cli_helpers.tabular_output import TabularOutputFormatter
 from cli_helpers.tabular_output.preprocessors import align_decimals, format_numbers
 from cli_helpers.utils import strip_ansi
-from intersystems_iris.dbapi._DBAPI import OperationalError, DatabaseError
+import iris
 from prompt_toolkit.completion import DynamicCompleter, ThreadedCompleter
 from prompt_toolkit.document import Document
 from prompt_toolkit.enums import DEFAULT_BUFFER, EditingMode
@@ -434,7 +434,7 @@ class IRISSqlCli(object):
             click.secho("cancelled query", err=True, fg="red")
         except NotImplementedError:
             click.secho("Not Yet Implemented.", fg="yellow")
-        except DatabaseError as e:
+        except iris.dbapi.DatabaseError as e:
             logger.error("sql: %r, error: %r", text, e)
             logger.error("traceback: %r", traceback.format_exc())
             click.secho(str(e), err=True, fg="red")
@@ -911,8 +911,10 @@ def cli(
         hostname, port, namespace, username, password, embedded = parse_uri(
             uri, hostname, port, namespace, username
         )
+    else:
+        embedded = True
 
-    namespace = namespace or namespace_opt or "USER"
+    namespace = namespace or namespace_opt or os.getenv("IRISNAMESPACE") or "USER"
     username = username or username_opt
     irissqlcli = IRISSqlCli(
         prompt_passwd,
