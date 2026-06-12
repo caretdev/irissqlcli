@@ -27,9 +27,9 @@ jobs:
           - "3.14"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -40,7 +40,7 @@ jobs:
           pip install -r requirements-iris.txt
           pip install -e .
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v4
         name: Run unit tests
         with:
           timeout_minutes: 10
@@ -62,8 +62,11 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - run: git fetch --depth=1 origin '+refs/tags/*:refs/tags/*'
         continue-on-error: true
       - name: set version
@@ -77,9 +80,9 @@ jobs:
           sed -i "s/__version__ = .*/__version__ = \"${VERSION}\"/" irissqlcli/__init__.py
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.10'
+          python-version: '3.12'
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -113,10 +116,7 @@ jobs:
 
       - name: Publish package
         if: github.event_name != 'pull_request'
-        uses: pypa/gh-action-pypi-publish@release/v1.5
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Docker login
         if: github.event_name != 'pull_request'
@@ -128,7 +128,7 @@ jobs:
         if: github.event_name != 'pull_request'
         run: make push
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         if: github.event_name == 'release'
         with:
           ref: main
