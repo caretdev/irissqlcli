@@ -11,6 +11,9 @@ on:
   release:
     types:
       - released
+permissions:
+  id-token: write
+  contents: write
 
 jobs:
   test:
@@ -62,9 +65,6 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: write
     steps:
       - uses: actions/checkout@v6
       - run: git fetch --depth=1 origin '+refs/tags/*:refs/tags/*'
@@ -84,9 +84,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v4
         with:
           platforms: linux/amd64,linux/arm64
       - name: Install requirements
@@ -120,7 +120,7 @@ jobs:
 
       - name: Docker login
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -155,7 +155,7 @@ jobs:
         run: |
           VERSION=${{ github.event.release.tag_name }} && VERSION=${VERSION/v/}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-      - uses: mislav/bump-homebrew-formula-action@v2
+      - uses: mislav/bump-homebrew-formula-action@v4
         with:
           formula-name: irissqlcli
           formula-path: Formula/irissqlcli.rb
