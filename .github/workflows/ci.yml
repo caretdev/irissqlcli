@@ -96,7 +96,7 @@ jobs:
       - name: Build Python package
         run: ./scripts/build-dist.sh
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request'
         with:
           name: dist
